@@ -1,5 +1,7 @@
 import { PrismaService } from '@app/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { OrderDto } from './dtos/order.dto';
+import { RegisterOrdersDto } from './dtos/register-order.dto';
 
 @Injectable()
 export class DeliveryService {
@@ -14,16 +16,17 @@ export class DeliveryService {
       where: { id },
     });
 
-    if (!deliveryPerson) {
-      return null; // or throw an exception
-    }
-
-    deliveryPerson.location = newLocation;
-    return this.deliveryPersonRepository.save(deliveryPerson);
+    return this.prismaService.deliveryPerson.update({
+      where: { id: deliveryPerson.id },
+      data: { location: newLocation },
+    });
   }
 
-  async getOrdersForDeliveryPerson(id: string): Promise<Order[]> {
-    return this.orderRepository.find({ where: { deliveryPersonId: id } });
+  async getOrdersForDeliveryPerson(id: string): Promise<OrderDto[]> {
+    return this.prismaService.order.findMany({
+      where: { deliveryPersonId: id },
+      include: { establishment: { select: { orders: true } } },
+    });
   }
 
   async notifyArrival(id: string): Promise<void> {
@@ -35,10 +38,18 @@ export class DeliveryService {
     // Implement the logic to confirm the arrival and register the confirmation in the backend
   }
 
-  async registerOrders(id: string, orders: Order[]): Promise<void> {
-    // Implement the logic to register orders for the delivery person
-    // You may want to validate the number of orders and other details
-  }
+  async registerOrders(
+    id: string,
+    ordersDto: RegisterOrdersDto,
+  ): Promise<void> {
+    const deliveryPerson = await this.prismaService.deliveryPerson.findUnique({
+      where: { id },
+    });
 
-  // Add other methods as needed
+    if (!deliveryPerson) {
+      throw new NotFoundException('Delivery person not found');
+    }
+
+    await this.prismaService.order.createMany({ data: ordersDto.orders });
+  }
 }

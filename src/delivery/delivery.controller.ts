@@ -1,4 +1,7 @@
 import { Controller, Get, Param, Patch, Body, Post } from '@nestjs/common';
+import { OrderDto } from './dtos/order.dto';
+import { DeliveryService } from './delivery.service';
+import { RegisterOrdersDto } from './dtos/register-order.dto';
 
 @Controller('delivery')
 export class DeliveryController {
@@ -36,7 +39,9 @@ export class DeliveryController {
   }
 
   @Get(':id/orders')
-  async getOrdersForDeliveryPerson(@Param('id') id: string): Promise<Order[]> {
+  async getOrdersForDeliveryPerson(
+    @Param('id') id: string,
+  ): Promise<OrderDto[]> {
     return this.deliveryService.getOrdersForDeliveryPerson(id);
   }
 
@@ -55,7 +60,7 @@ export class DeliveryController {
   @Post(':id/register-orders')
   async registerOrders(
     @Param('id') id: string,
-    @Body('orders') orders: Order[],
+    @Body('orders') orders: RegisterOrdersDto,
   ) {
     await this.deliveryService.registerOrders(id, orders);
     return { message: 'Orders registered successfully' };

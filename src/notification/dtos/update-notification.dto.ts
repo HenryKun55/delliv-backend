@@ -1,9 +1,41 @@
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsDateString,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 import { Prisma } from '@prisma/client';
 
 export class UpdateNotificationDto implements Prisma.NotificationUpdateInput {
-  content: string;
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  content?: string;
+
+  @IsOptional()
+  @IsDateString()
   timestamp?: string | Date;
-  status: string;
-  sender: Prisma.UserCreateNestedOneWithoutSentNotificationsInput;
-  receiver: Prisma.UserCreateNestedOneWithoutReceivedNotificationsInput;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  status?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UserCreateNestedOneWithoutSentNotificationsInputValidator)
+  sender?: Prisma.UserCreateNestedOneWithoutSentNotificationsInput;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UserCreateNestedOneWithoutReceivedNotificationsInputValidator)
+  receiver?: Prisma.UserCreateNestedOneWithoutReceivedNotificationsInput;
 }
+
+class UserCreateNestedOneWithoutSentNotificationsInputValidator
+  implements Prisma.UserCreateNestedOneWithoutSentNotificationsInput {}
+
+class UserCreateNestedOneWithoutReceivedNotificationsInputValidator
+  implements Prisma.UserCreateNestedOneWithoutReceivedNotificationsInput {}
