@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String          @id @default(uuid())
+  username              String          @unique
+  password              String
+  role                  Role            @default(DELIVERY_MAN)
+  deliveryPerson        DeliveryPerson?
+  establishment         Establishment?
+  receivedNotifications Notification[]  @relation("ReceivedNotifications")
+  sentNotifications     Notification[]  @relation("SentNotifications")
+}
+
+enum Role {
+  DELIVERY_MAN
+  ESTABLISHMENT
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  content    String
+  timestamp  DateTime @default(now())
+  status     String
+  senderId   String
+  receiverId String
+  receiver   User     @relation("ReceivedNotifications", fields: [receiverId], references: [id])
+  sender     User     @relation("SentNotifications", fields: [senderId], references: [id])
+}
+
+model DeliveryPerson {
+  id       String  @id @default(uuid())
+  name     String
+  location String
+  userId   String  @unique
+  user     User    @relation(fields: [userId], references: [id])
+  orders   Order[]
+}
+
+model Establishment {
+  id       String  @id @default(uuid())
+  name     String
+  location String
+  userId   String  @unique
+  user     User    @relation(fields: [userId], references: [id])
+  orders   Order[]
+}
+
+model Order {
+  id               String          @id @default(uuid())
+  customerName     String
+  deliveryAddress  String
+  items            Item[]
+  status           String
+  timestamp        DateTime        @default(now())
+  establishmentId  String
+  deliveryPersonId String?
+  deliveryPerson   DeliveryPerson? @relation(fields: [deliveryPersonId], references: [id])
+  establishment    Establishment   @relation(fields: [establishmentId], references: [id])
+}
+
+model Item {
+  id       String @id @default(uuid())
+  name     String
+  quantity Int
+  orderId  String
+  orders   Order  @relation(fields: [orderId], references: [id])
+}
