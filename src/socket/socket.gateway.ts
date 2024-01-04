@@ -1,4 +1,3 @@
-import { SocketUser } from '@app/common/interface/socket-user.interface';
 import {
   OnGatewayConnection,
   SubscribeMessage,
@@ -9,7 +8,7 @@ import { Server, Socket } from 'socket.io';
 
 interface MessagePayload {
   content: string;
-  sender: SocketUser;
+  sender: ;
 }
 
 @WebSocketGateway()

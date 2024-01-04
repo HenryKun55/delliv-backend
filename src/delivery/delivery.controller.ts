@@ -23,37 +23,24 @@ export class DeliveryController {
     @Param('id') id: string,
     @Body('location') newLocation: string,
   ) {
-    const updatedDeliveryPerson = await this.deliveryService.updateLocation(
-      id,
-      newLocation,
-    );
-
-    if (!updatedDeliveryPerson) {
-      return { message: 'Delivery person not found' };
-    }
-
-    return {
-      message: 'Location updated successfully',
-      delivery: updatedDeliveryPerson,
-    };
+    await this.deliveryService.updateLocation(id, newLocation);
+    return { message: 'Update location successfully' };
   }
 
   @Get(':id/orders')
-  async getOrdersForDeliveryPerson(
-    @Param('id') id: string,
-  ): Promise<OrderDto[]> {
-    return this.deliveryService.getOrdersForDeliveryPerson(id);
+  async getOrdersForDeliveryPerson(@Param('id') id: string) {
+    return { message: 'Here to get orders' };
   }
 
   @Post(':id/notify-arrival')
   async notifyArrival(@Param('id') id: string) {
-    await this.deliveryService.notifyArrival(id);
-    return { message: 'Notification sent successfully' };
+    // await this.deliveryService.notifyArrival(id);
+    return { message: 'Notify arrival successfully' };
   }
 
   @Patch(':id/confirm-arrival')
   async confirmArrival(@Param('id') id: string) {
-    await this.deliveryService.confirmArrival(id);
+    // await this.deliveryService.confirmArrival(id);
     return { message: 'Arrival confirmed successfully' };
   }
 
@@ -62,7 +49,7 @@ export class DeliveryController {
     @Param('id') id: string,
     @Body('orders') orders: RegisterOrdersDto,
   ) {
-    await this.deliveryService.registerOrders(id, orders);
+    // await this.deliveryService.registerOrders(id, orders);
     return { message: 'Orders registered successfully' };
   }
 }

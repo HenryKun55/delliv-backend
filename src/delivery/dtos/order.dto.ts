@@ -1,13 +1,5 @@
-import {
-  IsNotEmpty,
-  IsString,
-  IsDateString,
-  ValidateNested,
-  IsArray,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsNotEmpty, IsString, IsDateString } from 'class-validator';
 import { Prisma } from '@prisma/client';
-import { ItemDto } from './item.dto';
 
 export class OrderDto implements Prisma.OrderUncheckedCreateInput {
   @IsNotEmpty()
@@ -32,10 +24,4 @@ export class OrderDto implements Prisma.OrderUncheckedCreateInput {
   @IsNotEmpty()
   @IsString()
   deliveryPersonId?: string;
-
-  @IsNotEmpty()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ItemDto)
-  items?: Prisma.ItemUncheckedCreateNestedManyWithoutOrdersInput;
 }
