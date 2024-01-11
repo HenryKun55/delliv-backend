@@ -1,64 +1,48 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  NotFoundException,
   Param,
   Post,
-  Put,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { CreateNotificationDto } from './dtos/create-notification.dto';
-import { UpdateNotificationDto } from './dtos/update-notification.dto';
+import { JwtAuthGuard } from '@app/auth/jwt/jwt.guard';
+import { Roles } from '@app/auth/role.decorator';
+import { RoleGuard } from '@app/auth/role.guard';
+import { User } from '@prisma/client';
 
+@Roles('ESTABLISHMENT')
+@UseGuards(JwtAuthGuard, RoleGuard)
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
-  @Get()
-  async getAllNotifications() {
-    return this.notificationService.getAllNotifications();
+  @Get('')
+  @UseGuards(JwtAuthGuard)
+  async getAllNotifications(@Request() req: { user: User }) {
+    return this.notificationService.findAll(req.user);
   }
 
   @Get(':id')
-  async getNotificationById(@Param('id') id: string) {
-    const notification = await this.notificationService.getNotificationById(id);
-    if (!notification) {
-      throw new NotFoundException(`Notification with ID ${id} not found`);
-    }
-    return notification;
-  }
-
-  @Post()
-  async createNotification(
-    @Body() createNotificationDto: CreateNotificationDto,
-  ) {
-    return this.notificationService.createNotification(createNotificationDto);
-  }
-
-  @Put(':id')
-  async updateNotification(
+  @UseGuards(JwtAuthGuard)
+  async getNotificationById(
     @Param('id') id: string,
-    @Body() updateNotificationDto: UpdateNotificationDto,
+    @Request() req: { user: User },
   ) {
-    const notification = await this.notificationService.updateNotification(
-      id,
-      updateNotificationDto,
-    );
-    if (!notification) {
-      throw new NotFoundException(`Notification with ID ${id} not found`);
-    }
-    return notification;
+    return this.notificationService.findById(id, req.user);
   }
 
-  @Delete(':id')
-  async deleteNotification(@Param('id') id: string) {
-    const deletedNotification =
-      await this.notificationService.deleteNotification(id);
-    if (!deletedNotification) {
-      throw new NotFoundException(`Notification with ID ${id} not found`);
-    }
-    return deletedNotification;
+  @Post('')
+  async createNotification(@Request() req: { user: User }) {
+    return this.notificationService.createNotification(req.user);
+  }
+
+  @Post(':id/confirm')
+  async confirmNotification(
+    @Param('id') id: string,
+    @Request() req: { user: User },
+  ) {
+    return this.notificationService.confirmNotification(id, req.user);
   }
 }

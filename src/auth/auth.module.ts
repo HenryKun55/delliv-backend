@@ -8,17 +8,21 @@ import { JwtStrategy } from './jwt/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { UserModule } from '@app/user/user.module';
 import { JwtAuthGuard } from './jwt/jwt.guard';
+import typeorm from '@app/config/typeorm';
 
 @Module({
   imports: [
     UserModule,
-    ConfigModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [typeorm],
+    }),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),
-        signOptions: { expiresIn: '60s' },
+        signOptions: { expiresIn: '24h' },
       }),
       inject: [ConfigService],
     }),

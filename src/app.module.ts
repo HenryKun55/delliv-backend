@@ -4,26 +4,25 @@ import { NotificationModule } from './notification/notification.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { DeliveryModule } from './delivery/delivery.module';
+import { ConfigService } from '@nestjs/config';
+import { SocketModule } from './socket/socket.module';
+import { EstablishmentModule } from './establishment/establishment.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'delliv',
-      entities: [],
-      synchronize: true,
-      autoLoadEntities: true,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) =>
+        configService.get('typeorm'),
     }),
     PrismaModule,
+    SocketModule,
     AuthModule,
     UserModule,
     NotificationModule,
-    DeliveryModule,
+    EstablishmentModule,
+    OrderModule,
   ],
 })
 export class AppModule {}

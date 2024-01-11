@@ -8,14 +8,14 @@ datasource db {
 }
 
 model User {
-  id                    String         @id @default(uuid())
-  username              String         @unique
-  password              String
-  role                  Role           @default(DELIVERY_MAN)
-  establishmentId       String?
-  establishment         Establishment? @relation(fields: [establishmentId], references: [id])
-  receivedNotifications Notification[] @relation("ReceivedNotifications")
-  sentNotifications     Notification[] @relation("SentNotifications")
+  id              String         @id @default(uuid())
+  username        String         @unique
+  password        String
+  role            Role           @default(DELIVERY_MAN)
+  establishmentId String?
+  establishment   Establishment? @relation(fields: [establishmentId], references: [id])
+  notifications   Notification[]
+  orders          Order[]
 }
 
 enum Role {
@@ -24,33 +24,44 @@ enum Role {
 }
 
 model Notification {
-  id         String   @id @default(uuid())
-  content    String
-  timestamp  DateTime @default(now())
-  status     String
-  senderId   String
-  receiverId String
-  receiver   User     @relation("ReceivedNotifications", fields: [receiverId], references: [id])
-  sender     User     @relation("SentNotifications", fields: [senderId], references: [id])
+  id              String             @id @default(uuid())
+  timestamp       DateTime           @default(now())
+  status          NotificationStatus @default(IT_ARRIVED)
+  userId          String
+  user            User               @relation(fields: [userId], references: [id])
+  establishmentId String
+  establishment   Establishment      @relation(fields: [establishmentId], references: [id])
+}
+
+enum NotificationStatus {
+  IT_ARRIVED
+  CONFIRMED
 }
 
 model Establishment {
-  id       String  @id @default(uuid())
-  name     String
-  location String
-  users    User[]
-  orders   Order[]
+  id            String         @id @default(uuid())
+  name          String
+  location      String
+  users         User[]
+  orders        Order[]
+  notifications Notification[]
 }
 
 model Order {
   id              String          @id @default(uuid())
   customerName    String
-  deliveryAddress String
   items           ItemsOnOrders[]
-  status          String
+  status          OrderStatus     @default(NOTIFIED)
   timestamp       DateTime        @default(now())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
   establishmentId String
   establishment   Establishment   @relation(fields: [establishmentId], references: [id])
+}
+
+enum OrderStatus {
+  NOTIFIED
+  CONFIRMED
 }
 
 model Item {
@@ -62,12 +73,10 @@ model Item {
 }
 
 model ItemsOnOrders {
-  order      Order    @relation(fields: [orderId], references: [id])
-  orderId    String
-  item       Item     @relation(fields: [itemId], references: [id])
-  itemId     String
-  assignedAt DateTime @default(now())
-  assignedBy String
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
+  item    Item   @relation(fields: [itemId], references: [id])
+  itemId  String
 
   @@id([orderId, itemId])
 }
